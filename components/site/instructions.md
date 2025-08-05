@@ -401,6 +401,8 @@ validation: {
 - `select` - Dropdown with options
 - `checkbox` - Single checkbox
 - `radio` - Radio button group
+- `file` - File upload (with accept and multiple options)
+- `date`, `time`, `datetime-local` - Date/time inputs
 
 #### Validation Options
 - `required` - Field must have a value
@@ -409,6 +411,8 @@ validation: {
 - `validationType` - Built-in patterns: "email" | "url" | "phone" | "alphanumeric" | "numeric"
 - `pattern` - RegExp or string pattern (string patterns work in Server Components)
 - `custom` - Custom validation function (Client Components only)
+- `matches` - Field name to match (for password confirmation)
+- `matchMessage` - Custom message for match validation
 - `message` - Custom error message
 
 #### Form Props
@@ -418,6 +422,78 @@ validation: {
 - `gap` - Spacing between fields
 - `loading`/`disabled` - Form states
 - `showLabels`/`inlineErrors` - Display options
+- `successMessage` - Message to show on successful submission
+- `showSuccessMessage` - Whether to show success message
+- `resetOnSubmit` - Reset form after successful submission
+- `onSuccess` - Callback after successful submission
+
+#### Advanced Features
+
+##### Field Dependencies
+Show/hide fields based on other field values:
+```tsx
+{
+  name: "hasAccount",
+  type: "checkbox",
+  label: "I have an account"
+},
+{
+  name: "password",
+  type: "password",
+  label: "Password",
+  dependsOn: {
+    field: "hasAccount",
+    value: true,
+    condition: "equals" // equals | not-equals | contains | not-empty
+  }
+}
+```
+
+##### Password Confirmation
+Use the `matches` validation to confirm passwords:
+```tsx
+{
+  name: "password",
+  type: "password",
+  label: "Password",
+  validation: { required: true, minLength: 8 }
+},
+{
+  name: "confirmPassword",
+  type: "password",
+  label: "Confirm Password",
+  validation: {
+    required: true,
+    matches: "password",
+    matchMessage: "Passwords must match"
+  }
+}
+```
+
+##### File Upload
+Handle file uploads with validation:
+```tsx
+{
+  name: "avatar",
+  type: "file",
+  label: "Profile Picture",
+  accept: "image/*",
+  multiple: false,
+  validation: { required: true }
+}
+```
+
+##### Success States
+Show success message and reset form:
+```tsx
+<Form
+  fields={fields}
+  onSubmit={handleSubmit}
+  showSuccessMessage={true}
+  successMessage="Thank you! Your form has been submitted."
+  resetOnSubmit={true}
+/>
+```
 
 ## Component Combinations with shadcn/ui
 

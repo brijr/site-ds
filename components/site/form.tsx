@@ -28,7 +28,11 @@ export type FieldType =
   | "textarea"
   | "select"
   | "checkbox"
-  | "radio";
+  | "radio"
+  | "file"
+  | "date"
+  | "time"
+  | "datetime-local";
 
 export type ValidationRule = {
   required?: boolean;
@@ -40,6 +44,8 @@ export type ValidationRule = {
   validationType?: "email" | "url" | "phone" | "alphanumeric" | "numeric";
   message?: string;
   custom?: (value: any) => boolean | string;
+  matches?: string; // Field name to match (for password confirmation)
+  matchMessage?: string; // Custom message for match validation
 };
 
 export type SelectOption = {
@@ -59,6 +65,13 @@ export type Field = {
   disabled?: boolean;
   className?: string;
   helperText?: string;
+  accept?: string; // For file input
+  multiple?: boolean; // For file input
+  dependsOn?: {
+    field: string;
+    value: any;
+    condition?: "equals" | "not-equals" | "contains" | "not-empty";
+  }; // Field dependencies
 };
 
 export type FormProps = {
@@ -76,6 +89,10 @@ export type FormProps = {
   disabled?: boolean;
   showLabels?: boolean;
   inlineErrors?: boolean;
+  successMessage?: string;
+  showSuccessMessage?: boolean;
+  resetOnSubmit?: boolean;
+  onSuccess?: () => void;
 };
 
 // Component
@@ -95,19 +112,29 @@ export const Form = ({
   disabled = false,
   showLabels = true,
   inlineErrors = true,
+  successMessage = "Form submitted successfully!",
+  showSuccessMessage = false,
+  resetOnSubmit = false,
+  onSuccess,
 }: FormProps) => {
-  const [formData, setFormData] = useState<Record<string, any>>(() => {
+  const getInitialData = () => {
     const initialData: Record<string, any> = {};
     fields.forEach((field) => {
-      initialData[field.name] =
-        field.defaultValue ?? (field.type === "checkbox" ? false : "");
+      if (field.type === "file") {
+        initialData[field.name] = null;
+      } else {
+        initialData[field.name] =
+          field.defaultValue ?? (field.type === "checkbox" ? false : "");
+      }
     });
     return initialData;
-  });
+  };
 
+  const [formData, setFormData] = useState<Record<string, any>>(getInitialData);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const gapClasses = {
     0: "gap-0",
@@ -136,12 +163,24 @@ export const Form = ({
     numeric: /^[0-9]+$/,
   };
 
-  const validateField = (field: Field, value: any): string | null => {
+  const validateField = (field: Field, value: any, allValues?: Record<string, any>): string | null => {
     if (!field.validation) return null;
     const { validation } = field;
 
-    if (validation.required && !value) {
+    if (validation.required && !value && field.type !== "file") {
       return validation.message || `${field.label || field.name} is required`;
+    }
+
+    if (validation.required && field.type === "file" && !value) {
+      return validation.message || `Please select a file`;
+    }
+
+    // Check field matching (e.g., password confirmation)
+    if (validation.matches && allValues) {
+      const matchValue = allValues[validation.matches];
+      if (value !== matchValue) {
+        return validation.matchMessage || `${field.label || field.name} must match ${validation.matches}`;
+      }
     }
 
     if (validation.minLength && value.length < validation.minLength) {
@@ -194,17 +233,27 @@ export const Form = ({
   };
 
   const handleChange = (field: Field, value: any) => {
-    setFormData((prev) => ({ ...prev, [field.name]: value }));
+    const newFormData = { ...formData, [field.name]: value };
+    setFormData(newFormData);
+    setShowSuccess(false); // Hide success message on new input
     
     if (touched[field.name]) {
-      const error = validateField(field, value);
+      const error = validateField(field, value, newFormData);
       setErrors((prev) => ({ ...prev, [field.name]: error || "" }));
     }
+
+    // Also validate fields that depend on this one
+    fields.forEach((f) => {
+      if (f.validation?.matches === field.name && touched[f.name]) {
+        const error = validateField(f, newFormData[f.name], newFormData);
+        setErrors((prev) => ({ ...prev, [f.name]: error || "" }));
+      }
+    });
   };
 
   const handleBlur = (field: Field) => {
     setTouched((prev) => ({ ...prev, [field.name]: true }));
-    const error = validateField(field, formData[field.name]);
+    const error = validateField(field, formData[field.name], formData);
     setErrors((prev) => ({ ...prev, [field.name]: error || "" }));
   };
 
@@ -216,7 +265,7 @@ export const Form = ({
     let hasErrors = false;
 
     fields.forEach((field) => {
-      const error = validateField(field, formData[field.name]);
+      const error = validateField(field, formData[field.name], formData);
       if (error) {
         newErrors[field.name] = error;
         hasErrors = true;
@@ -233,12 +282,57 @@ export const Form = ({
     setIsSubmitting(true);
     try {
       await onSubmit(formData);
+      
+      // Handle success
+      if (showSuccessMessage) {
+        setShowSuccess(true);
+      }
+      
+      if (resetOnSubmit) {
+        setFormData(getInitialData());
+        setTouched({});
+        setErrors({});
+      }
+      
+      if (onSuccess) {
+        onSuccess();
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const resetForm = () => {
+    setFormData(getInitialData());
+    setTouched({});
+    setErrors({});
+    setShowSuccess(false);
+  };
+
+  // Check if field should be shown based on dependencies
+  const shouldShowField = (field: Field): boolean => {
+    if (!field.dependsOn) return true;
+    
+    const { field: dependentField, value, condition = "equals" } = field.dependsOn;
+    const dependentValue = formData[dependentField];
+    
+    switch (condition) {
+      case "equals":
+        return dependentValue === value;
+      case "not-equals":
+        return dependentValue !== value;
+      case "contains":
+        return dependentValue?.includes?.(value);
+      case "not-empty":
+        return !!dependentValue;
+      default:
+        return true;
+    }
+  };
+
   const renderField = (field: Field) => {
+    if (!shouldShowField(field)) return null;
+    
     const error = errors[field.name];
     const hasError = touched[field.name] && error;
     const isDisabled = disabled || loading || field.disabled;
@@ -322,6 +416,40 @@ export const Form = ({
           </RadioGroup>
         );
 
+      case "file":
+        return (
+          <Input
+            id={field.name}
+            name={field.name}
+            type="file"
+            onChange={(e) => {
+              const files = (e.target as HTMLInputElement).files;
+              handleChange(field, field.multiple ? files : files?.[0]);
+            }}
+            onBlur={() => handleBlur(field)}
+            disabled={isDisabled}
+            className={inputClassName}
+            accept={field.accept}
+            multiple={field.multiple}
+          />
+        );
+
+      case "date":
+      case "time":
+      case "datetime-local":
+        return (
+          <Input
+            id={field.name}
+            name={field.name}
+            type={field.type}
+            value={formData[field.name]}
+            onChange={(e) => handleChange(field, e.target.value)}
+            onBlur={() => handleBlur(field)}
+            disabled={isDisabled}
+            className={inputClassName}
+          />
+        );
+
       default:
         return (
           <Input
@@ -341,31 +469,41 @@ export const Form = ({
 
   return (
     <form onSubmit={handleSubmit} className={cn("w-full", className)}>
+      {showSuccess && showSuccessMessage && (
+        <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-md">
+          {successMessage}
+        </div>
+      )}
+      
       <div className={cn("grid", gapClasses[gap], columnClasses[columns])}>
-        {fields.map((field) => (
-          <div key={field.name} className={cn("space-y-2", fieldClassName)}>
-            {showLabels && field.label && field.type !== "checkbox" && (
-              <Label htmlFor={field.name}>
-                {field.label}
-                {field.validation?.required && (
-                  <span className="text-destructive ml-1">*</span>
-                )}
-              </Label>
-            )}
-            
-            {renderField(field)}
-            
-            {field.helperText && !errors[field.name] && (
-              <p className="text-sm text-muted-foreground">
-                {field.helperText}
-              </p>
-            )}
-            
-            {inlineErrors && touched[field.name] && errors[field.name] && (
-              <p className="text-sm text-destructive">{errors[field.name]}</p>
-            )}
-          </div>
-        ))}
+        {fields.map((field) => {
+          if (!shouldShowField(field)) return null;
+          
+          return (
+            <div key={field.name} className={cn("space-y-2", fieldClassName)}>
+              {showLabels && field.label && field.type !== "checkbox" && (
+                <Label htmlFor={field.name}>
+                  {field.label}
+                  {field.validation?.required && (
+                    <span className="text-destructive ml-1">*</span>
+                  )}
+                </Label>
+              )}
+              
+              {renderField(field)}
+              
+              {field.helperText && !errors[field.name] && (
+                <p className="text-sm text-muted-foreground">
+                  {field.helperText}
+                </p>
+              )}
+              
+              {inlineErrors && touched[field.name] && errors[field.name] && (
+                <p className="text-sm text-destructive">{errors[field.name]}</p>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <div className={cn("flex", gapClasses[gap], "mt-6", buttonClassName)}>
