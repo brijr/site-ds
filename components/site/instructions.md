@@ -13,7 +13,7 @@ This component library provides a set of React components designed for building 
 3. **Use the design tokens** - Stick to the predefined spacing (gap-4), container widths (max-w-5xl), and typography scales
 4. **Prefer composition** - Build complex layouts by composing these simple components rather than writing custom CSS
 5. **Respect the system** - Don't override core styles unless absolutely necessary
-6. **NEVER add padding to Section or Container** - These components have default padding built in. Use them as-is without adding py-, px-, or p- classes
+6. **NEVER add padding or height to Section or Container** - These components have default padding built in. Use them as-is without adding py-, px-, p-, h-, min-h-, or max-h- classes
 
 ## Import Statements
 
@@ -68,14 +68,14 @@ Navigation wrapper with built-in container constraints.
 #### Section
 
 Semantic section wrapper with vertical padding (py-2 sm:py-4 built-in).
-**DO NOT add padding classes** - use the default padding.
+**DO NOT add padding or height classes** - use the defaults.
 
 ```tsx
-<Section> {/* No padding classes needed */}
+<Section> {/* No padding or height classes */}
   <Container>{/* Section content */}</Container>
 </Section>
 
-<Section className="bg-muted"> {/* Only add background colors, not padding */}
+<Section className="bg-muted"> {/* Only add background colors, not padding/height */}
   <Container>{/* Section content */}</Container>
 </Section>
 ```
@@ -83,7 +83,7 @@ Semantic section wrapper with vertical padding (py-2 sm:py-4 built-in).
 #### Container
 
 Centers content with max-width constraint (max-w-5xl) and padding (p-4 sm:p-6 built-in).
-**DO NOT add padding classes** - use the default padding.
+**DO NOT add padding or height classes** - use the defaults.
 
 ```tsx
 <Container>{/* Contained content - padding is already applied */}</Container>
@@ -266,14 +266,14 @@ All components accept:
 - **ALWAYS use the provided components** for consistency
 - **STICK to the design system** spacing, typography, and layout patterns
 - **COMBINE components** rather than writing custom HTML/CSS
-- **NEVER add padding to Section or Container** - They have default padding (Section: py-2 sm:py-4, Container: p-4 sm:p-6)
+- **NEVER add padding or height to Section or Container** - Use defaults only (Section: py-2 sm:py-4, Container: p-4 sm:p-6)
 
 When building a landing page:
 
 ```tsx
 // Hero section with centered content
-<Section> {/* NO padding classes - uses default py-2 sm:py-4 */}
-  <Container> {/* NO padding classes - uses default p-4 sm:p-6 */}
+<Section> {/* NO padding or height classes - uses defaults */}
+  <Container> {/* NO padding or height classes - uses defaults */}
     <Flex direction="column" align="center" className="text-center">
       <Header as="h1">Build Better Websites</Header>
       <p className="text-xl text-muted-foreground max-w-2xl">
