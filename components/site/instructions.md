@@ -343,12 +343,12 @@ When building a blog post:
 
 ### Form Component (Client-Side)
 
-A flexible, client-side form component configured entirely through props.
+A flexible, client-side form component configured entirely through props with built-in webhook support.
 
-**Important for Server Components**: When using Form in Server Components, use `validationType` instead of RegExp patterns, and handle the onSubmit in a Client Component wrapper or use server actions.
+**Server Component Compatible**: The Form component can be used directly in Server Components by passing a `webhookUrl` instead of an `onSubmit` function. The form will handle submission internally.
 
 ```tsx
-// In Server Components, use validationType for built-in patterns:
+// For Server Components - use webhookUrl (no functions needed!)
 <Form
   fields={[
     {
@@ -374,17 +374,13 @@ A flexible, client-side form component configured entirely through props.
       label: "Message",
       rows: 5,
       validation: { required: true, minLength: 10 }
-    },
-    {
-      name: "subscribe",
-      type: "checkbox",
-      label: "Subscribe to newsletter"
     }
   ]}
-  onSubmit={async (data) => {
-    console.log('Form submitted:', data);
-    // Handle form submission
-  }}
+  webhookUrl="https://hooks.zapier.com/hooks/catch/123456/abcdef"
+  // or webhookUrl="https://formspree.io/f/YOUR_FORM_ID"
+  // or webhookUrl="/api/contact" for local API routes
+  showSuccessMessage={true}
+  resetOnSubmit={true}
   submitText="Send Message"
 />
 
@@ -417,7 +413,10 @@ validation: {
 
 #### Form Props
 - `fields` - Array of field configurations
-- `onSubmit` - Submit handler function
+- `webhookUrl` - URL to submit form data to (for Server Components)
+- `webhookMethod` - HTTP method for webhook (POST, PUT, PATCH)
+- `webhookHeaders` - Custom headers for webhook request
+- `onSubmit` - Submit handler function (Client Components only)
 - `columns` (1|2) - Layout in columns
 - `gap` - Spacing between fields
 - `loading`/`disabled` - Form states
@@ -426,6 +425,7 @@ validation: {
 - `showSuccessMessage` - Whether to show success message
 - `resetOnSubmit` - Reset form after successful submission
 - `onSuccess` - Callback after successful submission
+- `errorMessage` - Custom error message for failed submissions
 
 #### Advanced Features
 
@@ -488,11 +488,37 @@ Show success message and reset form:
 ```tsx
 <Form
   fields={fields}
-  onSubmit={handleSubmit}
+  webhookUrl="https://your-webhook-url.com"
   showSuccessMessage={true}
   successMessage="Thank you! Your form has been submitted."
   resetOnSubmit={true}
 />
+```
+
+##### Webhook Integration (Server Component Safe)
+Use the Form component in Server Components without any wrapper:
+```tsx
+// page.tsx (Server Component)
+export default function ContactPage() {
+  return (
+    <Form
+      fields={[
+        { name: "email", type: "email", label: "Email", validation: { required: true, validationType: "email" } },
+        { name: "message", type: "textarea", label: "Message", validation: { required: true } }
+      ]}
+      webhookUrl="https://formspree.io/f/YOUR_ID"
+      // Common webhook services:
+      // - Formspree: https://formspree.io/f/YOUR_FORM_ID
+      // - Zapier: https://hooks.zapier.com/hooks/catch/...
+      // - Make (Integromat): https://hook.integromat.com/...
+      // - n8n: https://your-n8n-instance.com/webhook/...
+      webhookMethod="POST"
+      webhookHeaders={{ "X-Custom-Header": "value" }}
+      showSuccessMessage={true}
+      resetOnSubmit={true}
+    />
+  );
+}
 ```
 
 ## Component Combinations with shadcn/ui

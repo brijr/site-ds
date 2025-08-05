@@ -76,7 +76,10 @@ export type Field = {
 
 export type FormProps = {
   fields: Field[];
-  onSubmit: (data: Record<string, any>) => void | Promise<void>;
+  onSubmit?: (data: Record<string, any>) => void | Promise<void>; // Optional - for client components
+  webhookUrl?: string; // Webhook URL for server components
+  webhookMethod?: "POST" | "PUT" | "PATCH"; // HTTP method for webhook
+  webhookHeaders?: Record<string, string>; // Custom headers for webhook
   submitText?: string;
   cancelText?: string;
   onCancel?: () => void;
@@ -93,6 +96,7 @@ export type FormProps = {
   showSuccessMessage?: boolean;
   resetOnSubmit?: boolean;
   onSuccess?: () => void;
+  errorMessage?: string; // Custom error message for failed submissions
 };
 
 // Component
@@ -100,6 +104,9 @@ export type FormProps = {
 export const Form = ({
   fields,
   onSubmit,
+  webhookUrl,
+  webhookMethod = "POST",
+  webhookHeaders = {},
   submitText = "Submit",
   cancelText = "Cancel",
   onCancel,
@@ -116,6 +123,7 @@ export const Form = ({
   showSuccessMessage = false,
   resetOnSubmit = false,
   onSuccess,
+  errorMessage = "Something went wrong. Please try again.",
 }: FormProps) => {
   const getInitialData = () => {
     const initialData: Record<string, any> = {};
@@ -135,6 +143,8 @@ export const Form = ({
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [submitError, setSubmitError] = useState<string>("");
 
   const gapClasses = {
     0: "gap-0",
@@ -236,6 +246,7 @@ export const Form = ({
     const newFormData = { ...formData, [field.name]: value };
     setFormData(newFormData);
     setShowSuccess(false); // Hide success message on new input
+    setShowError(false); // Hide error message on new input
     
     if (touched[field.name]) {
       const error = validateField(field, value, newFormData);
@@ -280,8 +291,69 @@ export const Form = ({
     if (hasErrors) return;
 
     setIsSubmitting(true);
+    setShowError(false);
+    setSubmitError("");
+
     try {
-      await onSubmit(formData);
+      // Prepare form data (handle file inputs)
+      const submitData = { ...formData };
+      
+      // If file fields exist and we're using webhook, convert to base64
+      if (webhookUrl) {
+        for (const field of fields) {
+          if (field.type === "file" && submitData[field.name]) {
+            const file = submitData[field.name];
+            if (file instanceof File) {
+              // Convert file to base64 for webhook submission
+              const reader = new FileReader();
+              const base64 = await new Promise<string>((resolve) => {
+                reader.onload = () => resolve(reader.result as string);
+                reader.readAsDataURL(file);
+              });
+              submitData[field.name] = {
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                data: base64
+              };
+            }
+          }
+        }
+      }
+
+      // Submit to webhook if URL provided
+      if (webhookUrl) {
+        const response = await fetch(webhookUrl, {
+          method: webhookMethod,
+          headers: {
+            "Content-Type": "application/json",
+            ...webhookHeaders,
+          },
+          body: JSON.stringify(submitData),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Form submission failed: ${response.status}`);
+        }
+
+        // Try to parse response (some webhooks return data)
+        try {
+          const responseData = await response.json();
+          if (onSubmit) {
+            await onSubmit(responseData);
+          }
+        } catch {
+          // Response might not be JSON, that's okay
+          if (onSubmit) {
+            await onSubmit(submitData);
+          }
+        }
+      } else if (onSubmit) {
+        // Use custom submit handler if no webhook
+        await onSubmit(submitData);
+      } else {
+        console.warn("Form: No webhook URL or onSubmit handler provided");
+      }
       
       // Handle success
       if (showSuccessMessage) {
@@ -297,6 +369,10 @@ export const Form = ({
       if (onSuccess) {
         onSuccess();
       }
+    } catch (error) {
+      console.error("Form submission error:", error);
+      setShowError(true);
+      setSubmitError(error instanceof Error ? error.message : errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -307,6 +383,8 @@ export const Form = ({
     setTouched({});
     setErrors({});
     setShowSuccess(false);
+    setShowError(false);
+    setSubmitError("");
   };
 
   // Check if field should be shown based on dependencies
@@ -472,6 +550,12 @@ export const Form = ({
       {showSuccess && showSuccessMessage && (
         <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-md">
           {successMessage}
+        </div>
+      )}
+      
+      {showError && (
+        <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md">
+          {submitError || errorMessage}
         </div>
       )}
       
