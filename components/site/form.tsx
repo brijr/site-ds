@@ -36,7 +36,8 @@ export type ValidationRule = {
   maxLength?: number;
   min?: number;
   max?: number;
-  pattern?: RegExp;
+  pattern?: RegExp | string; // Allow string patterns for server components
+  validationType?: "email" | "url" | "phone" | "alphanumeric" | "numeric";
   message?: string;
   custom?: (value: any) => boolean | string;
 };
@@ -126,6 +127,15 @@ export const Form = ({
     2: "grid-cols-1 md:grid-cols-2",
   };
 
+  // Built-in validation patterns
+  const validationPatterns = {
+    email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    url: /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/,
+    phone: /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/,
+    alphanumeric: /^[a-zA-Z0-9]+$/,
+    numeric: /^[0-9]+$/,
+  };
+
   const validateField = (field: Field, value: any): string | null => {
     if (!field.validation) return null;
     const { validation } = field;
@@ -156,8 +166,22 @@ export const Form = ({
       return validation.message || `Maximum value is ${validation.max}`;
     }
 
-    if (validation.pattern && !validation.pattern.test(value)) {
-      return validation.message || "Invalid format";
+    // Handle validation type (built-in patterns)
+    if (validation.validationType && value) {
+      const pattern = validationPatterns[validation.validationType];
+      if (pattern && !pattern.test(value)) {
+        return validation.message || `Invalid ${validation.validationType} format`;
+      }
+    }
+
+    // Handle custom pattern (RegExp or string)
+    if (validation.pattern && value) {
+      const pattern = typeof validation.pattern === 'string' 
+        ? new RegExp(validation.pattern)
+        : validation.pattern;
+      if (!pattern.test(value)) {
+        return validation.message || "Invalid format";
+      }
     }
 
     if (validation.custom) {

@@ -345,7 +345,10 @@ When building a blog post:
 
 A flexible, client-side form component configured entirely through props.
 
+**Important for Server Components**: When using Form in Server Components, use `validationType` instead of RegExp patterns, and handle the onSubmit in a Client Component wrapper or use server actions.
+
 ```tsx
+// In Server Components, use validationType for built-in patterns:
 <Form
   fields={[
     {
@@ -361,7 +364,7 @@ A flexible, client-side form component configured entirely through props.
       placeholder: "you@example.com",
       validation: {
         required: true,
-        pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        validationType: "email", // Use this instead of RegExp pattern
         message: "Please enter a valid email"
       }
     },
@@ -384,6 +387,12 @@ A flexible, client-side form component configured entirely through props.
   }}
   submitText="Send Message"
 />
+
+// Alternative: Use string patterns (works in Server Components)
+validation: {
+  pattern: "^[a-zA-Z0-9]+$", // String pattern instead of RegExp
+  message: "Only alphanumeric characters allowed"
+}
 ```
 
 #### Field Types
@@ -397,8 +406,9 @@ A flexible, client-side form component configured entirely through props.
 - `required` - Field must have a value
 - `minLength`/`maxLength` - String length constraints
 - `min`/`max` - Number value constraints
-- `pattern` - RegExp pattern matching
-- `custom` - Custom validation function
+- `validationType` - Built-in patterns: "email" | "url" | "phone" | "alphanumeric" | "numeric"
+- `pattern` - RegExp or string pattern (string patterns work in Server Components)
+- `custom` - Custom validation function (Client Components only)
 - `message` - Custom error message
 
 #### Form Props
