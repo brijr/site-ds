@@ -1,11 +1,13 @@
 # Site Component Library Instructions
 
 ## Overview
+
 This component library provides a set of React components designed for building clean, consistent websites. All components use Tailwind CSS for styling and accept common props for customization.
 
 **Important**: This project uses shadcn/ui. You have access to ALL shadcn components (Button, Card, Dialog, Form, etc.) in addition to these custom site components. Always prefer using existing components from this design system or shadcn/ui rather than creating new ones.
 
 ## Design System Guidelines
+
 1. **Always use existing components** - Never create custom components if one already exists in this library or shadcn/ui
 2. **Maintain consistency** - Follow the established patterns and styling conventions
 3. **Use the design tokens** - Stick to the predefined spacing (gap-4), container widths (max-w-5xl), and typography scales
@@ -13,14 +15,30 @@ This component library provides a set of React components designed for building 
 5. **Respect the system** - Don't override core styles unless absolutely necessary
 
 ## Import Statements
+
 ```tsx
 // Site components
-import { Main, Nav, Section, Container, Header, Grid, Flex, Prose } from '@/components/site'
+import {
+  Main,
+  Nav,
+  Section,
+  Container,
+  Header,
+  Grid,
+  Flex,
+  Prose,
+} from "@/components/site";
 
 // shadcn/ui components (examples)
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 // ... any other shadcn component
 ```
 
@@ -29,15 +47,17 @@ import { Input } from '@/components/ui/input'
 ### Layout Components
 
 #### Main
+
 Wraps the main content area of your page.
+
 ```tsx
-<Main className="min-h-screen">
-  {/* Page content */}
-</Main>
+<Main className="min-h-screen">{/* Page content */}</Main>
 ```
 
 #### Nav
+
 Navigation wrapper with built-in container constraints.
+
 ```tsx
 <Nav containerClassName="flex justify-between items-center">
   {/* Navigation items */}
@@ -45,34 +65,38 @@ Navigation wrapper with built-in container constraints.
 ```
 
 #### Section
+
 Semantic section wrapper with vertical padding.
+
 ```tsx
 <Section className="bg-muted">
-  <Container>
-    {/* Section content */}
-  </Container>
+  <Container>{/* Section content */}</Container>
 </Section>
 ```
 
 #### Container
+
 Centers content with max-width constraint (max-w-5xl).
+
 ```tsx
-<Container>
-  {/* Contained content */}
-</Container>
+<Container>{/* Contained content */}</Container>
 ```
 
 ### Typography Components
 
 #### Header
+
 Dynamic heading component that renders h1-h6 based on the `as` prop.
+
 ```tsx
 <Header as="h1">Page Title</Header>
 <Header as="h2" className="text-muted-foreground">Subtitle</Header>
 ```
 
 #### Prose
+
 Rich text wrapper that styles all child HTML elements (paragraphs, lists, links, etc.).
+
 ```tsx
 <Prose isArticle isSpaced>
   <h1>Article Title</h1>
@@ -85,13 +109,16 @@ Rich text wrapper that styles all child HTML elements (paragraphs, lists, links,
 ```
 
 Props:
+
 - `isArticle`: Renders as `<article>` tag and adds max-width for readability
 - `isSpaced`: Adds proper spacing between elements
 
 ### Layout Components
 
 #### Grid
+
 Responsive grid layout with automatic breakpoints.
+
 ```tsx
 <Grid columns={3}>
   <div>Item 1</div>
@@ -101,13 +128,16 @@ Responsive grid layout with automatic breakpoints.
 ```
 
 Columns (1-4) are responsive:
+
 - 1 column: Always single column
 - 2 columns: 1 on mobile, 2 on sm+
 - 3 columns: 1 on mobile, 2 on sm, 3 on lg+
 - 4 columns: 1 on mobile, 2 on sm, 4 on lg+
 
 #### Flex
+
 Flexible box layout with gap-4 default spacing.
+
 ```tsx
 <Flex justify="between" align="center">
   <div>Left content</div>
@@ -121,13 +151,16 @@ Flexible box layout with gap-4 default spacing.
 ```
 
 Props:
+
 - `direction`: "row" | "column" | "row-reverse" | "column-reverse"
 - `wrap`: boolean for flex-wrap
 - `justify`: "start" | "end" | "center" | "between" | "around" | "evenly"
 - `align`: "start" | "end" | "center" | "baseline" | "stretch"
 
 ## Common Props
+
 All components accept:
+
 - `className`: Additional Tailwind classes
 - `id`: HTML id attribute
 - `style`: Inline styles
@@ -136,6 +169,7 @@ All components accept:
 ## Usage Patterns
 
 ### Basic Page Structure
+
 ```tsx
 <Main>
   <Nav>
@@ -162,12 +196,15 @@ All components accept:
 ```
 
 ### Feature Grid
+
 ```tsx
 <Section>
   <Container>
-    <Header as="h2" className="text-center mb-8">Features</Header>
+    <Header as="h2" className="text-center mb-8">
+      Features
+    </Header>
     <Grid columns={3}>
-      {features.map(feature => (
+      {features.map((feature) => (
         <div key={feature.id}>
           <Header as="h3">{feature.title}</Header>
           <p>{feature.description}</p>
@@ -179,6 +216,7 @@ All components accept:
 ```
 
 ### Article Layout
+
 ```tsx
 <Main>
   <Section>
@@ -207,6 +245,7 @@ All components accept:
 10. **Consistent spacing**: Use the default gap-4 spacing unless there's a specific design requirement
 
 ## Responsive Design
+
 - Components are mobile-first
 - Breakpoints follow Tailwind defaults (sm: 640px, md: 768px, lg: 1024px)
 - Grid and typography scale automatically
@@ -215,12 +254,14 @@ All components accept:
 ## Examples for AI - IMPORTANT: Follow These Patterns
 
 ### ⚠️ CRITICAL: Design System Usage Rules
+
 - **NEVER create custom components** if one exists in this library or shadcn/ui
 - **ALWAYS use the provided components** for consistency
 - **STICK to the design system** spacing, typography, and layout patterns
 - **COMBINE components** rather than writing custom HTML/CSS
 
 When building a landing page:
+
 ```tsx
 // Hero section with centered content
 <Section className="py-24">
@@ -256,12 +297,15 @@ When building a landing page:
 ```
 
 When building a blog post:
+
 ```tsx
 <Main>
   <Section>
     <Container>
       <article className="mx-auto max-w-3xl">
-        <Header as="h1" className="mb-4">{post.title}</Header>
+        <Header as="h1" className="mb-4">
+          {post.title}
+        </Header>
         <Flex className="text-sm text-muted-foreground mb-8">
           <time>{post.date}</time>
           <span className="mx-2">•</span>
@@ -279,6 +323,7 @@ When building a blog post:
 ## Component Combinations with shadcn/ui
 
 ### Navigation with shadcn components
+
 ```tsx
 <Nav>
   <Container>
@@ -297,6 +342,7 @@ When building a blog post:
 ```
 
 ### Forms with shadcn components
+
 ```tsx
 <Section>
   <Container>
@@ -310,7 +356,9 @@ When building a blog post:
             <Input placeholder="Name" />
             <Input type="email" placeholder="Email" />
             <Textarea placeholder="Message" />
-            <Button type="submit" className="w-full">Send</Button>
+            <Button type="submit" className="w-full">
+              Send
+            </Button>
           </div>
         </Form>
       </CardContent>
@@ -320,7 +368,9 @@ When building a blog post:
 ```
 
 ## Final Reminder
+
 **You are building within an established design system.** Every decision should respect the existing components and patterns. Before creating anything custom, check if:
+
 1. This site component library has what you need
 2. shadcn/ui has a component for it
 3. You can compose existing components to achieve the goal
