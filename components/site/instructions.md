@@ -29,6 +29,7 @@ import {
   Flex,
   Prose,
 } from "@/components/site/ds";
+import { Form } from "@/components/site/form"; // Client component
 
 // shadcn/ui components (examples)
 import { Button } from "@/components/ui/button";
@@ -339,6 +340,74 @@ When building a blog post:
   </Section>
 </Main>
 ```
+
+### Form Component (Client-Side)
+
+A flexible, client-side form component configured entirely through props.
+
+```tsx
+<Form
+  fields={[
+    {
+      name: "name",
+      type: "text",
+      label: "Full Name",
+      validation: { required: true }
+    },
+    {
+      name: "email",
+      type: "email",
+      label: "Email Address",
+      placeholder: "you@example.com",
+      validation: {
+        required: true,
+        pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        message: "Please enter a valid email"
+      }
+    },
+    {
+      name: "message",
+      type: "textarea",
+      label: "Message",
+      rows: 5,
+      validation: { required: true, minLength: 10 }
+    },
+    {
+      name: "subscribe",
+      type: "checkbox",
+      label: "Subscribe to newsletter"
+    }
+  ]}
+  onSubmit={async (data) => {
+    console.log('Form submitted:', data);
+    // Handle form submission
+  }}
+  submitText="Send Message"
+/>
+```
+
+#### Field Types
+- `text`, `email`, `password`, `number`, `tel`, `url` - Standard inputs
+- `textarea` - Multi-line text
+- `select` - Dropdown with options
+- `checkbox` - Single checkbox
+- `radio` - Radio button group
+
+#### Validation Options
+- `required` - Field must have a value
+- `minLength`/`maxLength` - String length constraints
+- `min`/`max` - Number value constraints
+- `pattern` - RegExp pattern matching
+- `custom` - Custom validation function
+- `message` - Custom error message
+
+#### Form Props
+- `fields` - Array of field configurations
+- `onSubmit` - Submit handler function
+- `columns` (1|2) - Layout in columns
+- `gap` - Spacing between fields
+- `loading`/`disabled` - Form states
+- `showLabels`/`inlineErrors` - Display options
 
 ## Component Combinations with shadcn/ui
 
