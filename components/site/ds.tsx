@@ -26,6 +26,7 @@ type HeaderProps = SharedProps & {
 
 type GridProps = SharedProps & {
   columns?: 1 | 2 | 3 | 4;
+  gap?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 8 | 10 | 12;
 };
 
 type FlexProps = SharedProps & {
@@ -33,6 +34,7 @@ type FlexProps = SharedProps & {
   wrap?: boolean;
   justify?: "start" | "end" | "center" | "between" | "around" | "evenly";
   align?: "start" | "end" | "center" | "baseline" | "stretch";
+  gap?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 8 | 10 | 12;
 };
 
 // Styles
@@ -113,6 +115,7 @@ export const Grid = ({
   id,
   style,
   columns = 1,
+  gap = 4,
 }: GridProps) => {
   const gridColumns = {
     1: "grid-cols-1",
@@ -121,9 +124,22 @@ export const Grid = ({
     4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
   };
 
+  const gapClasses = {
+    0: "gap-0",
+    1: "gap-1",
+    2: "gap-2",
+    3: "gap-3",
+    4: "gap-4",
+    5: "gap-5",
+    6: "gap-6",
+    8: "gap-8",
+    10: "gap-10",
+    12: "gap-12",
+  };
+
   return (
     <div
-      className={cn("grid gap-4", gridColumns[columns], className)}
+      className={cn("grid", gapClasses[gap], gridColumns[columns], className)}
       id={id}
       style={style}
     >
@@ -141,6 +157,7 @@ export const Flex = ({
   wrap = false,
   justify = "start",
   align = "stretch",
+  gap = 4,
 }: FlexProps) => {
   const flexDirection = {
     row: "flex-row",
@@ -166,10 +183,24 @@ export const Flex = ({
     stretch: "items-stretch",
   };
 
+  const gapClasses = {
+    0: "gap-0",
+    1: "gap-1",
+    2: "gap-2",
+    3: "gap-3",
+    4: "gap-4",
+    5: "gap-5",
+    6: "gap-6",
+    8: "gap-8",
+    10: "gap-10",
+    12: "gap-12",
+  };
+
   return (
     <div
       className={cn(
-        "flex gap-4",
+        "flex",
+        gapClasses[gap],
         flexDirection[direction],
         wrap && "flex-wrap",
         justifyContent[justify],

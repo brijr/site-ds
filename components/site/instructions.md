@@ -124,7 +124,7 @@ Props:
 
 #### Grid
 
-Responsive grid layout with automatic breakpoints.
+Responsive grid layout with automatic breakpoints and customizable gap.
 
 ```tsx
 <Grid columns={3}>
@@ -132,23 +132,34 @@ Responsive grid layout with automatic breakpoints.
   <div>Item 2</div>
   <div>Item 3</div>
 </Grid>
+
+<Grid columns={2} gap={6}> {/* Custom gap size */}
+  <div>Item 1</div>
+  <div>Item 2</div>
+</Grid>
 ```
 
-Columns (1-4) are responsive:
-
-- 1 column: Always single column
-- 2 columns: 1 on mobile, 2 on sm+
-- 3 columns: 1 on mobile, 2 on sm, 3 on lg+
-- 4 columns: 1 on mobile, 2 on sm, 4 on lg+
+Props:
+- `columns` (1-4) - Responsive columns:
+  - 1 column: Always single column
+  - 2 columns: 1 on mobile, 2 on sm+
+  - 3 columns: 1 on mobile, 2 on sm, 3 on lg+
+  - 4 columns: 1 on mobile, 2 on sm, 4 on lg+
+- `gap` (0|1|2|3|4|5|6|8|10|12) - Gap between items, defaults to 4
 
 #### Flex
 
-Flexible box layout with gap-4 default spacing.
+Flexible box layout with customizable gap spacing.
 
 ```tsx
 <Flex justify="between" align="center">
   <div>Left content</div>
   <div>Right content</div>
+</Flex>
+
+<Flex direction="column" gap={2}> {/* Tighter spacing */}
+  <div>Item 1</div>
+  <div>Item 2</div>
 </Flex>
 
 <Flex direction="column" className="md:flex-row">
@@ -163,6 +174,7 @@ Props:
 - `wrap`: boolean for flex-wrap
 - `justify`: "start" | "end" | "center" | "between" | "around" | "evenly"
 - `align`: "start" | "end" | "center" | "baseline" | "stretch"
+- `gap` (0|1|2|3|4|5|6|8|10|12) - Gap between items, defaults to 4
 
 ## Common Props
 
