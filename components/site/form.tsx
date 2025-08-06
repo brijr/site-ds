@@ -173,7 +173,11 @@ export const Form = ({
     numeric: /^[0-9]+$/,
   };
 
-  const validateField = (field: Field, value: any, allValues?: Record<string, any>): string | null => {
+  const validateField = (
+    field: Field,
+    value: any,
+    allValues?: Record<string, any>
+  ): string | null => {
     if (!field.validation) return null;
     const { validation } = field;
 
@@ -189,7 +193,10 @@ export const Form = ({
     if (validation.matches && allValues) {
       const matchValue = allValues[validation.matches];
       if (value !== matchValue) {
-        return validation.matchMessage || `${field.label || field.name} must match ${validation.matches}`;
+        return (
+          validation.matchMessage ||
+          `${field.label || field.name} must match ${validation.matches}`
+        );
       }
     }
 
@@ -219,15 +226,18 @@ export const Form = ({
     if (validation.validationType && value) {
       const pattern = validationPatterns[validation.validationType];
       if (pattern && !pattern.test(value)) {
-        return validation.message || `Invalid ${validation.validationType} format`;
+        return (
+          validation.message || `Invalid ${validation.validationType} format`
+        );
       }
     }
 
     // Handle custom pattern (RegExp or string)
     if (validation.pattern && value) {
-      const pattern = typeof validation.pattern === 'string' 
-        ? new RegExp(validation.pattern)
-        : validation.pattern;
+      const pattern =
+        typeof validation.pattern === "string"
+          ? new RegExp(validation.pattern)
+          : validation.pattern;
       if (!pattern.test(value)) {
         return validation.message || "Invalid format";
       }
@@ -247,7 +257,7 @@ export const Form = ({
     setFormData(newFormData);
     setShowSuccess(false); // Hide success message on new input
     setShowError(false); // Hide error message on new input
-    
+
     if (touched[field.name]) {
       const error = validateField(field, value, newFormData);
       setErrors((prev) => ({ ...prev, [field.name]: error || "" }));
@@ -297,7 +307,7 @@ export const Form = ({
     try {
       // Prepare form data (handle file inputs)
       const submitData = { ...formData };
-      
+
       // If file fields exist and we're using webhook, convert to base64
       if (webhookUrl) {
         for (const field of fields) {
@@ -314,7 +324,7 @@ export const Form = ({
                 name: file.name,
                 type: file.type,
                 size: file.size,
-                data: base64
+                data: base64,
               };
             }
           }
@@ -354,18 +364,18 @@ export const Form = ({
       } else {
         console.warn("Form: No webhook URL or onSubmit handler provided");
       }
-      
+
       // Handle success
       if (showSuccessMessage) {
         setShowSuccess(true);
       }
-      
+
       if (resetOnSubmit) {
         setFormData(getInitialData());
         setTouched({});
         setErrors({});
       }
-      
+
       if (onSuccess) {
         onSuccess();
       }
@@ -390,10 +400,14 @@ export const Form = ({
   // Check if field should be shown based on dependencies
   const shouldShowField = (field: Field): boolean => {
     if (!field.dependsOn) return true;
-    
-    const { field: dependentField, value, condition = "equals" } = field.dependsOn;
+
+    const {
+      field: dependentField,
+      value,
+      condition = "equals",
+    } = field.dependsOn;
     const dependentValue = formData[dependentField];
-    
+
     switch (condition) {
       case "equals":
         return dependentValue === value;
@@ -410,7 +424,7 @@ export const Form = ({
 
   const renderField = (field: Field) => {
     if (!shouldShowField(field)) return null;
-    
+
     const error = errors[field.name];
     const hasError = touched[field.name] && error;
     const isDisabled = disabled || loading || field.disabled;
@@ -486,7 +500,10 @@ export const Form = ({
             {field.options?.map((option) => (
               <div key={option.value} className="flex items-center space-x-2">
                 <RadioGroupItem value={option.value} id={option.value} />
-                <Label htmlFor={option.value} className="font-normal cursor-pointer">
+                <Label
+                  htmlFor={option.value}
+                  className="font-normal cursor-pointer"
+                >
                   {option.label}
                 </Label>
               </div>
@@ -552,17 +569,17 @@ export const Form = ({
           {successMessage}
         </div>
       )}
-      
+
       {showError && (
         <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md">
           {submitError || errorMessage}
         </div>
       )}
-      
+
       <div className={cn("grid", gapClasses[gap], columnClasses[columns])}>
         {fields.map((field) => {
           if (!shouldShowField(field)) return null;
-          
+
           return (
             <div key={field.name} className={cn("space-y-2", fieldClassName)}>
               {showLabels && field.label && field.type !== "checkbox" && (
@@ -573,15 +590,15 @@ export const Form = ({
                   )}
                 </Label>
               )}
-              
+
               {renderField(field)}
-              
+
               {field.helperText && !errors[field.name] && (
                 <p className="text-sm text-muted-foreground">
                   {field.helperText}
                 </p>
               )}
-              
+
               {inlineErrors && touched[field.name] && errors[field.name] && (
                 <p className="text-sm text-destructive">{errors[field.name]}</p>
               )}
@@ -598,7 +615,7 @@ export const Form = ({
         >
           {isSubmitting || loading ? "Loading..." : submitText}
         </Button>
-        
+
         {onCancel && (
           <Button
             type="button"
