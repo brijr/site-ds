@@ -6,17 +6,18 @@
    ============================================ */
 
 /* Typography Utilities
-   These classes use CSS variables that can be set via the Main component */
+   These classes use CSS variables that can be set via the Main component
+   Only apply these classes when explicitly needed, not by default */
 .font-display {
-  font-family: var(--font-display, ui-serif, Georgia, serif);
+  font-family: var(--font-display);
 }
 
 .font-body {
-  font-family: var(--font-body, ui-sans-serif, system-ui, sans-serif);
+  font-family: var(--font-body);
 }
 
 .font-mono {
-  font-family: var(--font-mono, ui-monospace, monospace);
+  font-family: var(--font-mono);
 }
 
 /* Brand Color Utilities

@@ -185,7 +185,9 @@ export const Header = ({
     <Component
       className={cn(
         headingStyles[as],
-        "font-display", // Use display font for all headers
+        // Only apply font-display if the CSS variable exists
+        // This will be set when theme.fonts.heading is provided
+        "[font-family:var(--font-display,inherit)]",
         className
       )}
       id={id}

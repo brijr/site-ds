@@ -47,30 +47,50 @@ import { Input } from "@/components/ui/input";
 
 ## Theming
 
-The Main component accepts a `theme` prop for customizing colors and fonts:
+⚠️ **IMPORTANT**: To customize colors and fonts, you MUST pass a `theme` prop to the `Main` component. Without it, the site uses default system fonts and shadcn colors.
 
-### Colors (all optional)
-- `primary`: Main CTA buttons and primary elements
+### How to Use Theme
+
+The Main component accepts a `theme` prop with these options:
+
+#### Colors (all optional)
+- `primary`: Main CTA buttons and primary elements (hex, rgb, or hsl)
 - `secondary`: Secondary buttons and elements
 - `accent`: Accent colors
 - `background`: Page background color
 - `foreground`: Default text color
 - `brand`: Custom brand color (use with `.text-brand`, `.bg-brand` classes)
 
-### Fonts (all optional)
+#### Fonts (all optional)
 - `heading`: Font family for all headers (h1-h6)
 - `body`: Font family for body text
+
+⚠️ **Note**: Fonts must be loaded separately (via Google Fonts, next/font, etc.) or use system fonts.
 
 ### Examples
 
 ```tsx
-// Default - uses shadcn defaults
+// ❌ WITHOUT THEME - Uses browser defaults (not recommended for branding)
 <Main>
   <Header>Welcome</Header>
   <Button>Get Started</Button>
 </Main>
 
-// Custom colors
+// ✅ RECOMMENDED - Always provide a theme for consistent branding
+<Main theme={{
+  colors: {
+    primary: "#0066FF",     // Your brand's primary color
+  },
+  fonts: {
+    heading: "Georgia, serif",  // Use system fonts or loaded fonts
+    body: "system-ui, sans-serif"
+  }
+}}>
+  <Header>Welcome</Header>  {/* Will use Georgia font */}
+  <Button>Get Started</Button>  {/* Will be blue (#0066FF) */}
+</Main>
+
+// Custom colors only
 <Main theme={{
   colors: {
     primary: "#0066FF",     // Blue buttons
@@ -83,18 +103,18 @@ The Main component accepts a `theme` prop for customizing colors and fonts:
   <p className="text-brand">Brand colored text</p>
 </Main>
 
-// Custom fonts
+// System font stacks (always work, no loading required)
 <Main theme={{
   fonts: {
-    heading: "'Cal Sans', serif",
-    body: "'Inter', sans-serif"
+    heading: "-apple-system, BlinkMacSystemFont, 'Segoe UI', serif",
+    body: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
   }
 }}>
-  <Header>Welcome</Header>  {/* Uses Cal Sans */}
-  <p>Body text</p>          {/* Uses Inter */}
+  <Header>Welcome</Header>  {/* Modern system serif */}
+  <p>Body text</p>          {/* Modern system sans-serif */}
 </Main>
 
-// Full customization
+// Full customization example
 <Main theme={{
   colors: {
     primary: "#FF6B6B",
@@ -102,13 +122,28 @@ The Main component accepts a `theme` prop for customizing colors and fonts:
     foreground: "#1A1A1A"
   },
   fonts: {
-    heading: "'Clash Display', sans-serif",
-    body: "'Satoshi', sans-serif"
+    heading: "Georgia, serif",  // Safe system font
+    body: "system-ui, sans-serif"
   },
   dark: false  // Force light mode
 }}>
   {/* Fully themed experience */}
 </Main>
+```
+
+### Safe System Font Stacks
+
+These fonts work everywhere without loading:
+
+```tsx
+// Modern sans-serif
+heading: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+
+// Classic serif
+heading: "Georgia, Cambria, 'Times New Roman', serif"
+
+// Monospace
+heading: "'SF Mono', Monaco, 'Cascadia Code', monospace"
 ```
 
 ## Components
