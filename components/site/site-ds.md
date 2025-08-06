@@ -378,7 +378,7 @@ import Link from "next/link"
 
 <Main>
   {/* No Nav component - reduces distractions */}
-  
+
   {/* Hero section with functional CTA */}
   <Section>
     <Container>
@@ -387,12 +387,12 @@ import Link from "next/link"
         <p className="text-xl text-muted-foreground max-w-2xl">
           Create beautiful, responsive websites with our component library
         </p>
-        
+
         {/* Functional CTA - links to contact form */}
         <Button size="lg" className="mt-8" asChild>
           <Link href="/contact">Get Started Free</Link>
         </Button>
-        
+
         {/* Secondary CTA */}
         <Button variant="outline" className="mt-4" asChild>
           <a href="https://demo.yoursite.com" target="_blank" rel="noopener noreferrer">
@@ -418,10 +418,10 @@ import Link from "next/link"
         </Card>
         {/* More cards... */}
       </Grid>
-      
+
       {/* Scroll to pricing CTA */}
       <Flex justify="center" className="mt-8">
-        <Button 
+        <Button
           size="lg"
           onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
         >
@@ -459,7 +459,7 @@ import Link from "next/link"
       </Flex>
     </Container>
   </Nav>
-  
+
   {/* Rest of landing page content... */}
 </Main>
 ```
