@@ -28,6 +28,7 @@ import {
   Grid,
   Flex,
   Prose,
+  type ThemeProps, // Import theme type if needed
 } from "@/components/site/ds";
 import { Form } from "@/components/site/form"; // Client component
 
@@ -42,6 +43,72 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 // ... any other shadcn component
+```
+
+## Theming
+
+The Main component accepts a `theme` prop for customizing colors and fonts:
+
+### Colors (all optional)
+- `primary`: Main CTA buttons and primary elements
+- `secondary`: Secondary buttons and elements
+- `accent`: Accent colors
+- `background`: Page background color
+- `foreground`: Default text color
+- `brand`: Custom brand color (use with `.text-brand`, `.bg-brand` classes)
+
+### Fonts (all optional)
+- `heading`: Font family for all headers (h1-h6)
+- `body`: Font family for body text
+
+### Examples
+
+```tsx
+// Default - uses shadcn defaults
+<Main>
+  <Header>Welcome</Header>
+  <Button>Get Started</Button>
+</Main>
+
+// Custom colors
+<Main theme={{
+  colors: {
+    primary: "#0066FF",     // Blue buttons
+    secondary: "#7C3AED",    // Purple secondary
+    brand: "#FF6B6B"         // Custom brand color
+  }
+}}>
+  <Header>Welcome</Header>
+  <Button>Get Started</Button>  {/* Automatically blue */}
+  <p className="text-brand">Brand colored text</p>
+</Main>
+
+// Custom fonts
+<Main theme={{
+  fonts: {
+    heading: "'Cal Sans', serif",
+    body: "'Inter', sans-serif"
+  }
+}}>
+  <Header>Welcome</Header>  {/* Uses Cal Sans */}
+  <p>Body text</p>          {/* Uses Inter */}
+</Main>
+
+// Full customization
+<Main theme={{
+  colors: {
+    primary: "#FF6B6B",
+    background: "#FAFAFA",
+    foreground: "#1A1A1A"
+  },
+  fonts: {
+    heading: "'Clash Display', sans-serif",
+    body: "'Satoshi', sans-serif"
+  },
+  dark: false  // Force light mode
+}}>
+  {/* Fully themed experience */}
+</Main>
 ```
 
 ## Components

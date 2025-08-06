@@ -20,6 +20,27 @@ type SharedProps = {
   isSpaced?: boolean;
 };
 
+export type ThemeProps = {
+  // Direct color control (all optional)
+  colors?: {
+    primary?: string;      // Updates all primary buttons/elements
+    secondary?: string;    // Updates secondary variants
+    accent?: string;       // Updates accent elements
+    background?: string;   // Page background
+    foreground?: string;   // Default text color
+    brand?: string;        // Custom brand color (outside shadcn)
+  };
+  
+  // Font selection (all optional)
+  fonts?: {
+    heading?: string;      // Font family for headers
+    body?: string;         // Font family for body text
+  };
+  
+  // Dark mode
+  dark?: boolean;
+};
+
 type HeaderProps = SharedProps & {
   as?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 };
@@ -50,11 +71,73 @@ const headingStyles = {
 
 // Components
 
-export const Main = ({ children, className, id, style }: SharedProps) => (
-  <main className={cn("", className)} id={id} style={style}>
-    {children}
-  </main>
-);
+// Helper to convert color to HSL format for shadcn (if needed)
+const toHSL = (color: string): string => {
+  // If already in shadcn HSL format (e.g., "222.2 47.4% 11.2%")
+  if (/^\d+\.?\d*\s+\d+\.?\d*%\s+\d+\.?\d*%$/.test(color)) {
+    return color;
+  }
+  // For other formats, return as-is (CSS will handle it)
+  // In production, you might want to use a color library here
+  return color;
+};
+
+export const Main = ({ 
+  children, 
+  className, 
+  id, 
+  style,
+  theme 
+}: SharedProps & { theme?: ThemeProps }) => {
+  // Build CSS variables from theme props
+  const themeVars: Record<string, string> = {};
+  
+  if (theme?.colors) {
+    // Map theme colors to CSS variables
+    if (theme.colors.primary) {
+      themeVars['--primary'] = toHSL(theme.colors.primary);
+    }
+    if (theme.colors.secondary) {
+      themeVars['--secondary'] = toHSL(theme.colors.secondary);
+    }
+    if (theme.colors.accent) {
+      themeVars['--accent'] = toHSL(theme.colors.accent);
+    }
+    if (theme.colors.background) {
+      themeVars['--background'] = toHSL(theme.colors.background);
+    }
+    if (theme.colors.foreground) {
+      themeVars['--foreground'] = toHSL(theme.colors.foreground);
+    }
+    if (theme.colors.brand) {
+      themeVars['--brand'] = theme.colors.brand;
+    }
+  }
+  
+  if (theme?.fonts) {
+    // Set font variables
+    if (theme.fonts.heading) {
+      themeVars['--font-display'] = theme.fonts.heading;
+    }
+    if (theme.fonts.body) {
+      themeVars['--font-body'] = theme.fonts.body;
+    }
+  }
+  
+  return (
+    <main 
+      className={cn(
+        "",
+        theme?.dark && "dark",
+        className
+      )} 
+      id={id} 
+      style={{ ...themeVars, ...style } as React.CSSProperties}
+    >
+      {children}
+    </main>
+  );
+};
 
 export const Nav = ({
   children,
@@ -100,7 +183,11 @@ export const Header = ({
 
   return (
     <Component
-      className={cn(headingStyles[as], className)}
+      className={cn(
+        headingStyles[as],
+        "font-display", // Use display font for all headers
+        className
+      )}
       id={id}
       style={style}
     >
