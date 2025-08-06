@@ -395,8 +395,11 @@ validation: {
 - `text`, `email`, `password`, `number`, `tel`, `url` - Standard inputs
 - `textarea` - Multi-line text
 - `select` - Dropdown with options
+- `multiselect` - Multi-selection with checkboxes and badges
 - `checkbox` - Single checkbox
 - `radio` - Radio button group
+- `yesno` - Large side-by-side Yes/No buttons (perfect for mobile)
+- `range` - Slider for numeric ranges with optional value display
 - `file` - File upload (with accept and multiple options)
 - `date`, `time`, `datetime-local` - Date/time inputs
 
@@ -481,6 +484,178 @@ Handle file uploads with validation:
   multiple: false,
   validation: { required: true }
 }
+```
+
+##### New Field Types for Landing Pages
+
+###### Multi-Select Field
+Perfect for services, interests, or skills selection:
+```tsx
+{
+  name: "services",
+  type: "multiselect",
+  label: "Which services do you need?",
+  validation: { required: true },
+  options: [
+    { label: "Web Design", value: "web-design" },
+    { label: "SEO Optimization", value: "seo" },
+    { label: "Content Marketing", value: "content" },
+    { label: "Social Media", value: "social" }
+  ]
+}
+```
+Features:
+- Visual checkboxes with hover states
+- Selected items shown as removable badges below
+- Returns array of selected values
+- Perfect for lead qualification
+
+###### Range/Slider Field
+Ideal for budgets, quantities, or ratings:
+```tsx
+{
+  name: "budget",
+  type: "range",
+  label: "What's your budget range?",
+  min: 1000,
+  max: 50000,
+  step: 1000,
+  showValue: true, // Shows current value between min/max
+  defaultValue: 10000,
+  validation: { required: true }
+}
+```
+Features:
+- Smooth slider interaction
+- Optional value display with min/max labels
+- Great for mobile touch interaction
+- Perfect for budget/pricing forms
+
+###### Yes/No Button Field
+Large, mobile-friendly binary choice buttons:
+```tsx
+{
+  name: "military_service",
+  type: "yesno",
+  label: "Did you or a loved one serve in the military?",
+  yesLabel: "Yes", // Optional, defaults to "Yes"
+  noLabel: "No",   // Optional, defaults to "No"
+  validation: { required: true }
+}
+```
+Features:
+- Large buttons (h-14) perfect for mobile tapping
+- Side-by-side layout
+- Visual selection state with ring highlight
+- Returns `true` for yes, `false` for no, `null` for unselected
+- Ideal for qualification questions
+
+##### Landing Page Form Examples
+
+###### Lead Qualification Form
+```tsx
+<Form
+  fields={[
+    {
+      name: "company",
+      type: "text",
+      label: "Company Name",
+      validation: { required: true }
+    },
+    {
+      name: "budget",
+      type: "range",
+      label: "Monthly Budget",
+      min: 1000,
+      max: 25000,
+      step: 1000,
+      showValue: true,
+      defaultValue: 5000
+    },
+    {
+      name: "services",
+      type: "multiselect",
+      label: "Services Needed",
+      validation: { required: true },
+      options: [
+        { label: "Website Design", value: "design" },
+        { label: "SEO", value: "seo" },
+        { label: "Paid Advertising", value: "ads" },
+        { label: "Content Creation", value: "content" }
+      ]
+    },
+    {
+      name: "timeline",
+      type: "select",
+      label: "When do you want to start?",
+      validation: { required: true },
+      options: [
+        { label: "Immediately", value: "asap" },
+        { label: "Within 1 month", value: "1month" },
+        { label: "1-3 months", value: "quarter" },
+        { label: "Just exploring", value: "exploring" }
+      ]
+    },
+    {
+      name: "previous_experience",
+      type: "yesno",
+      label: "Have you worked with a marketing agency before?",
+      validation: { required: true }
+    }
+  ]}
+  webhookUrl="https://your-webhook.com/leads"
+  showSuccessMessage={true}
+  resetOnSubmit={true}
+  submitText="Get Free Consultation"
+/>
+```
+
+###### Service Calculator Form
+```tsx
+<Form
+  fields={[
+    {
+      name: "project_size",
+      type: "range",
+      label: "Number of pages needed",
+      min: 1,
+      max: 50,
+      step: 1,
+      showValue: true,
+      defaultValue: 5
+    },
+    {
+      name: "features",
+      type: "multiselect",
+      label: "Required features",
+      options: [
+        { label: "E-commerce", value: "ecommerce" },
+        { label: "Blog", value: "blog" },
+        { label: "Contact Forms", value: "forms" },
+        { label: "User Accounts", value: "users" },
+        { label: "Payment Processing", value: "payments" }
+      ]
+    },
+    {
+      name: "mobile_first",
+      type: "yesno",
+      label: "Is mobile experience your priority?",
+      validation: { required: true }
+    },
+    {
+      name: "timeline",
+      type: "range",
+      label: "Timeline (weeks)",
+      min: 2,
+      max: 20,
+      step: 1,
+      showValue: true,
+      defaultValue: 8
+    }
+  ]}
+  webhookUrl="/api/calculate-quote"
+  submitText="Get Instant Quote"
+/>
 ```
 
 ##### Success States

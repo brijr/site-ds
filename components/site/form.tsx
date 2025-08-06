@@ -15,6 +15,9 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
 
 // Types
 
@@ -27,8 +30,11 @@ export type FieldType =
   | "url"
   | "textarea"
   | "select"
+  | "multiselect"
   | "checkbox"
   | "radio"
+  | "yesno"
+  | "range"
   | "file"
   | "date"
   | "time"
@@ -60,13 +66,21 @@ export type Field = {
   placeholder?: string;
   defaultValue?: any;
   validation?: ValidationRule;
-  options?: SelectOption[]; // For select and radio
+  options?: SelectOption[]; // For select, radio, and multiselect
   rows?: number; // For textarea
   disabled?: boolean;
   className?: string;
   helperText?: string;
   accept?: string; // For file input
   multiple?: boolean; // For file input
+  // Range field props
+  min?: number; // For range
+  max?: number; // For range
+  step?: number; // For range
+  showValue?: boolean; // For range - show current value
+  // Yes/No field props
+  yesLabel?: string; // For yesno - defaults to "Yes"
+  noLabel?: string; // For yesno - defaults to "No"
   dependsOn?: {
     field: string;
     value: any;
@@ -132,7 +146,10 @@ export const Form = ({
         initialData[field.name] = null;
       } else {
         initialData[field.name] =
-          field.defaultValue ?? (field.type === "checkbox" ? false : "");
+          field.defaultValue ?? (field.type === "checkbox" ? false : 
+          field.type === "multiselect" ? [] :
+          field.type === "range" ? field.min ?? 0 : 
+          field.type === "yesno" ? null : "");
       }
     });
     return initialData;
@@ -181,12 +198,20 @@ export const Form = ({
     if (!field.validation) return null;
     const { validation } = field;
 
-    if (validation.required && !value && field.type !== "file") {
+    if (validation.required && !value && field.type !== "file" && field.type !== "multiselect") {
       return validation.message || `${field.label || field.name} is required`;
     }
 
     if (validation.required && field.type === "file" && !value) {
       return validation.message || `Please select a file`;
+    }
+
+    if (validation.required && field.type === "multiselect" && (!value || value.length === 0)) {
+      return validation.message || `Please select at least one option`;
+    }
+
+    if (validation.required && field.type === "yesno" && value === null) {
+      return validation.message || `Please select an option`;
     }
 
     // Check field matching (e.g., password confirmation)
@@ -509,6 +534,128 @@ export const Form = ({
               </div>
             ))}
           </RadioGroup>
+        );
+
+      case "multiselect":
+        const selectedValues = formData[field.name] || [];
+        return (
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-2">
+              {field.options?.map((option) => {
+                const isSelected = selectedValues.includes(option.value);
+                return (
+                  <div
+                    key={option.value}
+                    className={cn(
+                      "flex items-center justify-between p-3 rounded-md border cursor-pointer transition-colors",
+                      isSelected
+                        ? "border-primary bg-primary/5"
+                        : "border-input hover:bg-muted/50",
+                      isDisabled && "opacity-50 cursor-not-allowed"
+                    )}
+                    onClick={() => {
+                      if (isDisabled) return;
+                      const newValues = isSelected
+                        ? selectedValues.filter((v: string) => v !== option.value)
+                        : [...selectedValues, option.value];
+                      handleChange(field, newValues);
+                    }}
+                  >
+                    <Label className="font-normal cursor-pointer flex-1">
+                      {option.label}
+                    </Label>
+                    <Checkbox
+                      checked={isSelected}
+                      disabled={isDisabled}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            {selectedValues.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {selectedValues.map((value: string) => {
+                  const option = field.options?.find(opt => opt.value === value);
+                  return (
+                    <Badge
+                      key={value}
+                      variant="secondary"
+                      className="flex items-center gap-1"
+                    >
+                      {option?.label}
+                      <X
+                        className="h-3 w-3 cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (isDisabled) return;
+                          const newValues = selectedValues.filter((v: string) => v !== value);
+                          handleChange(field, newValues);
+                        }}
+                      />
+                    </Badge>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+
+      case "range":
+        const rangeValue = formData[field.name] || field.min || 0;
+        return (
+          <div className="space-y-3">
+            <Slider
+              value={[rangeValue]}
+              onValueChange={(value) => handleChange(field, value[0])}
+              min={field.min || 0}
+              max={field.max || 100}
+              step={field.step || 1}
+              disabled={isDisabled}
+              className="w-full"
+            />
+            {field.showValue && (
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>{field.min || 0}</span>
+                <span className="font-medium text-foreground">{rangeValue}</span>
+                <span>{field.max || 100}</span>
+              </div>
+            )}
+          </div>
+        );
+
+      case "yesno":
+        const yesValue = true;
+        const noValue = false;
+        const currentValue = formData[field.name];
+        return (
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              type="button"
+              variant={currentValue === yesValue ? "default" : "outline"}
+              size="lg"
+              className={cn(
+                "h-14 text-base font-normal",
+                currentValue === yesValue && "ring-2 ring-primary ring-offset-2"
+              )}
+              onClick={() => handleChange(field, yesValue)}
+              disabled={isDisabled}
+            >
+              {field.yesLabel || "Yes"}
+            </Button>
+            <Button
+              type="button"
+              variant={currentValue === noValue ? "default" : "outline"}
+              size="lg"
+              className={cn(
+                "h-14 text-base font-normal",
+                currentValue === noValue && "ring-2 ring-primary ring-offset-2"
+              )}
+              onClick={() => handleChange(field, noValue)}
+              disabled={isDisabled}
+            >
+              {field.noLabel || "No"}
+            </Button>
+          </div>
         );
 
       case "file":
