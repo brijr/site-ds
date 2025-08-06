@@ -81,6 +81,8 @@ export type Field = {
   // Yes/No field props
   yesLabel?: string; // For yesno - defaults to "Yes"
   noLabel?: string; // For yesno - defaults to "No"
+  // Phone field props
+  phoneFormat?: "us" | "international" | "auto"; // For tel - defaults to "auto"
   dependsOn?: {
     field: string;
     value: any;
@@ -181,11 +183,52 @@ export const Form = ({
     2: "grid-cols-1 md:grid-cols-2",
   };
 
+  // Phone formatting utilities
+  const formatPhoneNumber = (value: string, format: "us" | "international" | "auto" = "auto"): string => {
+    // Remove all non-numeric characters except +
+    const numbers = value.replace(/[^\d+]/g, "");
+    
+    // Handle international format
+    if (format === "international" || (format === "auto" && numbers.startsWith("+"))) {
+      if (numbers.length < 2) return numbers;
+      
+      const countryCode = numbers.startsWith("+1") ? numbers.slice(0, 2) : numbers.slice(0, 1);
+      const remaining = numbers.slice(countryCode.length);
+      
+      // Limit to 10 digits after country code
+      const limitedRemaining = remaining.slice(0, 10);
+      
+      if (limitedRemaining.length === 0) return countryCode;
+      if (limitedRemaining.length <= 3) return `${countryCode} (${limitedRemaining}`;
+      if (limitedRemaining.length <= 6) return `${countryCode} (${limitedRemaining.slice(0, 3)}) ${limitedRemaining.slice(3)}`;
+      return `${countryCode} (${limitedRemaining.slice(0, 3)}) ${limitedRemaining.slice(3, 6)}-${limitedRemaining.slice(6)}`;
+    }
+    
+    // Handle US format - limit to 10 digits
+    const limitedNumbers = numbers.slice(0, 10);
+    
+    if (limitedNumbers.length === 0) return "";
+    if (limitedNumbers.length <= 3) return `(${limitedNumbers}`;
+    if (limitedNumbers.length <= 6) return `(${limitedNumbers.slice(0, 3)}) ${limitedNumbers.slice(3)}`;
+    return `(${limitedNumbers.slice(0, 3)}) ${limitedNumbers.slice(3, 6)}-${limitedNumbers.slice(6)}`;
+  };
+
+  const getPhoneNumbers = (formatted: string): string => {
+    // Extract numbers and preserve + for international
+    if (formatted.startsWith("+")) {
+      const numbers = formatted.replace(/[^\d]/g, "");
+      // Limit to 11 digits total for +1 format, or 11 for other country codes
+      return "+" + numbers.slice(0, 11);
+    }
+    // Limit to 10 digits for US format
+    return formatted.replace(/[^\d]/g, "").slice(0, 10);
+  };
+
   // Built-in validation patterns
   const validationPatterns = {
     email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     url: /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/,
-    phone: /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/,
+    phone: /^(\+1?[0-9]{10,11}|[0-9]{10})$/, // Updated for US and international
     alphanumeric: /^[a-zA-Z0-9]+$/,
     numeric: /^[0-9]+$/,
   };
@@ -673,6 +716,36 @@ export const Form = ({
             className={inputClassName}
             accept={field.accept}
             multiple={field.multiple}
+          />
+        );
+
+      case "tel":
+        // Get current raw value and format it for display
+        const rawPhoneValue = formData[field.name] || "";
+        const phoneFormat = field.phoneFormat || "auto";
+        const displayValue = rawPhoneValue ? formatPhoneNumber(rawPhoneValue, phoneFormat) : "";
+        
+        const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+          const inputValue = e.target.value;
+          
+          // Extract just numbers for storage and validation
+          const rawNumbers = getPhoneNumbers(inputValue);
+          
+          // Store raw numbers in form data
+          handleChange(field, rawNumbers);
+        };
+        
+        return (
+          <Input
+            id={field.name}
+            name={field.name}
+            type="tel"
+            value={displayValue}
+            onChange={handlePhoneChange}
+            onBlur={() => handleBlur(field)}
+            placeholder={field.placeholder || (phoneFormat === "international" ? "+1 (555) 123-4567" : "(555) 123-4567")}
+            disabled={isDisabled}
+            className={inputClassName}
           />
         );
 

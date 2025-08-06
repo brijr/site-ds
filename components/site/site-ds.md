@@ -392,7 +392,8 @@ validation: {
 ```
 
 #### Field Types
-- `text`, `email`, `password`, `number`, `tel`, `url` - Standard inputs
+- `text`, `email`, `password`, `number`, `url` - Standard inputs
+- `tel` - Phone number input with automatic formatting
 - `textarea` - Multi-line text
 - `select` - Dropdown with options
 - `multiselect` - Multi-selection with checkboxes and badges
@@ -550,6 +551,32 @@ Features:
 - Returns `true` for yes, `false` for no, `null` for unselected
 - Ideal for qualification questions
 
+###### Phone Number Field
+Automatically formats phone numbers with real-time formatting:
+```tsx
+{
+  name: "phone",
+  type: "tel",
+  label: "Phone Number",
+  phoneFormat: "auto", // "us" | "international" | "auto"
+  placeholder: "(555) 123-4567", // Auto-generated based on format
+  validation: {
+    required: true,
+    validationType: "phone" // Built-in phone validation
+  }
+}
+```
+Features:
+- **Real-time formatting**: User types `5551234567` → displays `(555) 123-4567`
+- **Smart format detection**: Auto-detects US vs international based on `+` prefix
+- **Format options**:
+  - `"us"`: Forces US format `(555) 123-4567`
+  - `"international"`: Forces international format `+1 (555) 123-4567`
+  - `"auto"`: Auto-detects format (default)
+- **Clean data storage**: Stores raw numbers for validation and submission
+- **Paste support**: Handles pasted formatted or unformatted numbers
+- **Mobile optimized**: Uses `type="tel"` for proper mobile keyboards
+
 ##### Landing Page Form Examples
 
 ###### Lead Qualification Form
@@ -561,6 +588,16 @@ Features:
       type: "text",
       label: "Company Name",
       validation: { required: true }
+    },
+    {
+      name: "phone",
+      type: "tel",
+      label: "Phone Number",
+      phoneFormat: "auto",
+      validation: {
+        required: true,
+        validationType: "phone"
+      }
     },
     {
       name: "budget",
@@ -655,6 +692,74 @@ Features:
   ]}
   webhookUrl="/api/calculate-quote"
   submitText="Get Instant Quote"
+/>
+```
+
+###### Contact Form with Phone Formatting
+Perfect example showcasing phone number formatting:
+```tsx
+<Form
+  fields={[
+    {
+      name: "name",
+      type: "text",
+      label: "Full Name",
+      validation: { required: true }
+    },
+    {
+      name: "email",
+      type: "email",
+      label: "Email Address",
+      validation: {
+        required: true,
+        validationType: "email"
+      }
+    },
+    {
+      name: "phone",
+      type: "tel",
+      label: "Phone Number",
+      phoneFormat: "us", // Force US format for local business
+      validation: {
+        required: true,
+        validationType: "phone",
+        message: "Please enter a valid phone number"
+      }
+    },
+    {
+      name: "preferred_contact",
+      type: "yesno",
+      label: "Prefer to be contacted by phone?",
+      yesLabel: "Yes, call me",
+      noLabel: "Email is fine"
+    },
+    {
+      name: "urgency",
+      type: "range",
+      label: "How urgent is your need? (1-10)",
+      min: 1,
+      max: 10,
+      step: 1,
+      showValue: true,
+      defaultValue: 5
+    },
+    {
+      name: "message",
+      type: "textarea",
+      label: "Tell us about your project",
+      rows: 4,
+      validation: {
+        required: true,
+        minLength: 20
+      }
+    }
+  ]}
+  columns={2} // Two-column layout on larger screens
+  webhookUrl="https://formspree.io/f/YOUR_ID"
+  showSuccessMessage={true}
+  successMessage="Thanks! We'll get back to you within 24 hours."
+  resetOnSubmit={true}
+  submitText="Send Message"
 />
 ```
 
