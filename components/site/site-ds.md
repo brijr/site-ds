@@ -56,15 +56,17 @@ Wraps the main content area of your page.
 <Main className="min-h-screen">{/* Page content */}</Main>
 ```
 
-#### Nav
+#### Nav (Optional for Landing Pages)
 
-Navigation wrapper with built-in container constraints.
+Navigation wrapper with built-in container constraints. **Not required for landing pages** - many high-converting landing pages work better without navigation to reduce distractions and keep users focused on the main CTA.
 
 ```tsx
 <Nav containerClassName="flex justify-between items-center">
   {/* Navigation items */}
 </Nav>
 ```
+
+**Landing Page Best Practice**: Consider skipping Nav for focused landing pages where you want users to complete a specific action.
 
 #### Section
 
@@ -280,41 +282,186 @@ All components accept:
 - **STICK to the design system** spacing, typography, and layout patterns
 - **COMBINE components** rather than writing custom HTML/CSS
 - **NEVER add padding or height to Section or Container** - Use defaults only (Section: py-2 sm:py-4, Container: p-4 sm:p-6)
+- **ALWAYS make CTAs functional** - Every button must have proper href, onClick, or form submission
 
-When building a landing page:
+### 🔗 CRITICAL: CTA and Button Guidelines
 
+**All CTAs and buttons MUST be functional and clickable:**
+
+#### Primary CTAs - Use Next.js Link or href
 ```tsx
-// Hero section with centered content
-<Section> {/* NO padding or height classes - uses defaults */}
-  <Container> {/* NO padding or height classes - uses defaults */}
-    <Flex direction="column" align="center" className="text-center">
-      <Header as="h1">Build Better Websites</Header>
-      <p className="text-xl text-muted-foreground max-w-2xl">
-        Create beautiful, responsive websites with our component library
-      </p>
-      {/* Use shadcn Button component */}
-      <Button size="lg" className="mt-8">Get Started</Button>
-    </Flex>
-  </Container>
-</Section>
+import Link from "next/link"
 
-// Feature cards - using shadcn Card components
-<Section>
+// Internal navigation
+<Button asChild size="lg">
+  <Link href="/contact">Get Started</Link>
+</Button>
+
+// External links
+<Button asChild size="lg">
+  <a href="https://calendly.com/yourname/demo" target="_blank" rel="noopener noreferrer">
+    Book Demo
+  </a>
+</Button>
+
+// Email links
+<Button asChild size="lg">
+  <a href="mailto:hello@company.com">Contact Us</a>
+</Button>
+
+// Phone links
+<Button asChild size="lg">
+  <a href="tel:+1-555-123-4567">Call Now</a>
+</Button>
+```
+
+#### Form Submit Buttons - Use form submission
+```tsx
+// Form submission button (automatically functional with Form component)
+<Form
+  fields={fields}
+  webhookUrl="https://your-webhook.com"
+  submitText="Get Free Quote" // This becomes a functional submit button
+/>
+```
+
+#### Scroll-to-Section CTAs
+```tsx
+// Smooth scroll to section
+<Button
+  size="lg"
+  onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+>
+  View Pricing
+</Button>
+
+// Or add id to target section
+<Section id="pricing">
   <Container>
-    <Grid columns={3}>
-      <Card>
-        <CardHeader>
-          <CardTitle>Fast</CardTitle>
-          <CardDescription>Optimized for performance</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p>Lightning fast load times</p>
-        </CardContent>
-      </Card>
-      {/* More cards... */}
-    </Grid>
+    {/* Pricing content */}
   </Container>
 </Section>
+```
+
+#### Secondary Actions
+```tsx
+// Download links
+<Button variant="outline" asChild>
+  <a href="/brochure.pdf" download>Download Brochure</a>
+</Button>
+
+// Social links
+<Button variant="outline" asChild>
+  <a href="https://twitter.com/yourcompany" target="_blank" rel="noopener noreferrer">
+    Follow on Twitter
+  </a>
+</Button>
+```
+
+#### ❌ NEVER do this (non-functional buttons):
+```tsx
+// DON'T - Button without action
+<Button size="lg">Get Started</Button>
+
+// DON'T - Link without href
+<a>Contact Us</a>
+
+// DON'T - Placeholder text
+<Button>Coming Soon</Button>
+```
+
+### Landing Page Examples with Functional CTAs
+
+#### Option 1: Landing Page without Navigation (Recommended for focus)
+```tsx
+import Link from "next/link"
+
+<Main>
+  {/* No Nav component - reduces distractions */}
+  
+  {/* Hero section with functional CTA */}
+  <Section>
+    <Container>
+      <Flex direction="column" align="center" className="text-center">
+        <Header as="h1">Build Better Websites</Header>
+        <p className="text-xl text-muted-foreground max-w-2xl">
+          Create beautiful, responsive websites with our component library
+        </p>
+        
+        {/* Functional CTA - links to contact form */}
+        <Button size="lg" className="mt-8" asChild>
+          <Link href="/contact">Get Started Free</Link>
+        </Button>
+        
+        {/* Secondary CTA */}
+        <Button variant="outline" className="mt-4" asChild>
+          <a href="https://demo.yoursite.com" target="_blank" rel="noopener noreferrer">
+            View Demo
+          </a>
+        </Button>
+      </Flex>
+    </Container>
+  </Section>
+
+  {/* Features with scroll CTA */}
+  <Section>
+    <Container>
+      <Grid columns={3}>
+        <Card>
+          <CardHeader>
+            <CardTitle>Fast</CardTitle>
+            <CardDescription>Optimized for performance</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Lightning fast load times</p>
+          </CardContent>
+        </Card>
+        {/* More cards... */}
+      </Grid>
+      
+      {/* Scroll to pricing CTA */}
+      <Flex justify="center" className="mt-8">
+        <Button 
+          size="lg"
+          onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+        >
+          View Pricing
+        </Button>
+      </Flex>
+    </Container>
+  </Section>
+
+  {/* Pricing section */}
+  <Section id="pricing">
+    <Container>
+      {/* Pricing content with functional CTAs */}
+      <Button size="lg" asChild>
+        <a href="mailto:sales@company.com?subject=Pricing Inquiry">
+          Contact Sales
+        </a>
+      </Button>
+    </Container>
+  </Section>
+</Main>
+```
+
+#### Option 2: Landing Page with Minimal Navigation
+```tsx
+<Main>
+  {/* Minimal nav with only logo and CTA */}
+  <Nav>
+    <Container>
+      <Flex justify="between" align="center">
+        <Header as="h3">Logo</Header>
+        <Button asChild>
+          <Link href="/contact">Get Started</Link>
+        </Button>
+      </Flex>
+    </Container>
+  </Nav>
+  
+  {/* Rest of landing page content... */}
+</Main>
 ```
 
 When building a blog post:
