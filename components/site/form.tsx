@@ -49,7 +49,7 @@ export type ValidationRule = {
   pattern?: RegExp | string; // Allow string patterns for server components
   validationType?: "email" | "url" | "phone" | "alphanumeric" | "numeric";
   message?: string;
-  custom?: (value: any) => boolean | string;
+  custom?: (value: unknown) => boolean | string;
   matches?: string; // Field name to match (for password confirmation)
   matchMessage?: string; // Custom message for match validation
 };
@@ -64,7 +64,7 @@ export type Field = {
   type: FieldType;
   label?: string;
   placeholder?: string;
-  defaultValue?: any;
+  defaultValue?: unknown;
   validation?: ValidationRule;
   options?: SelectOption[]; // For select, radio, and multiselect
   rows?: number; // For textarea
@@ -85,14 +85,14 @@ export type Field = {
   phoneFormat?: "us" | "international" | "auto"; // For tel - defaults to "auto"
   dependsOn?: {
     field: string;
-    value: any;
+    value: unknown;
     condition?: "equals" | "not-equals" | "contains" | "not-empty";
   }; // Field dependencies
 };
 
 export type FormProps = {
   fields: Field[];
-  onSubmit?: (data: Record<string, any>) => void | Promise<void>; // Optional - for client components
+  onSubmit?: (data: Record<string, unknown>) => void | Promise<void>; // Optional - for client components
   webhookUrl?: string; // Webhook URL for server components
   webhookMethod?: "POST" | "PUT" | "PATCH"; // HTTP method for webhook
   webhookHeaders?: Record<string, string>; // Custom headers for webhook
@@ -142,7 +142,7 @@ export const Form = ({
   errorMessage = "Something went wrong. Please try again.",
 }: FormProps) => {
   const getInitialData = () => {
-    const initialData: Record<string, any> = {};
+    const initialData: Record<string, unknown> = {};
     fields.forEach((field) => {
       if (field.type === "file") {
         initialData[field.name] = null;
@@ -157,7 +157,7 @@ export const Form = ({
     return initialData;
   };
 
-  const [formData, setFormData] = useState<Record<string, any>>(getInitialData);
+  const [formData, setFormData] = useState<Record<string, unknown>>(getInitialData);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -235,8 +235,8 @@ export const Form = ({
 
   const validateField = (
     field: Field,
-    value: any,
-    allValues?: Record<string, any>
+    value: unknown,
+    allValues?: Record<string, unknown>
   ): string | null => {
     if (!field.validation) return null;
     const { validation } = field;
@@ -249,7 +249,7 @@ export const Form = ({
       return validation.message || `Please select a file`;
     }
 
-    if (validation.required && field.type === "multiselect" && (!value || value.length === 0)) {
+    if (validation.required && field.type === "multiselect" && (!value || !Array.isArray(value) || value.length === 0)) {
       return validation.message || `Please select at least one option`;
     }
 
@@ -268,14 +268,14 @@ export const Form = ({
       }
     }
 
-    if (validation.minLength && value.length < validation.minLength) {
+    if (validation.minLength && typeof value === 'string' && value.length < validation.minLength) {
       return (
         validation.message ||
         `Minimum length is ${validation.minLength} characters`
       );
     }
 
-    if (validation.maxLength && value.length > validation.maxLength) {
+    if (validation.maxLength && typeof value === 'string' && value.length > validation.maxLength) {
       return (
         validation.message ||
         `Maximum length is ${validation.maxLength} characters`
@@ -291,7 +291,7 @@ export const Form = ({
     }
 
     // Handle validation type (built-in patterns)
-    if (validation.validationType && value) {
+    if (validation.validationType && value && typeof value === 'string') {
       const pattern = validationPatterns[validation.validationType];
       if (pattern && !pattern.test(value)) {
         return (
@@ -301,7 +301,7 @@ export const Form = ({
     }
 
     // Handle custom pattern (RegExp or string)
-    if (validation.pattern && value) {
+    if (validation.pattern && value && typeof value === 'string') {
       const pattern =
         typeof validation.pattern === "string"
           ? new RegExp(validation.pattern)
@@ -320,7 +320,7 @@ export const Form = ({
     return null;
   };
 
-  const handleChange = (field: Field, value: any) => {
+  const handleChange = (field: Field, value: unknown) => {
     const newFormData = { ...formData, [field.name]: value };
     setFormData(newFormData);
     setShowSuccess(false); // Hide success message on new input
@@ -456,14 +456,6 @@ export const Form = ({
     }
   };
 
-  const resetForm = () => {
-    setFormData(getInitialData());
-    setTouched({});
-    setErrors({});
-    setShowSuccess(false);
-    setShowError(false);
-    setSubmitError("");
-  };
 
   // Check if field should be shown based on dependencies
   const shouldShowField = (field: Field): boolean => {
@@ -482,7 +474,7 @@ export const Form = ({
       case "not-equals":
         return dependentValue !== value;
       case "contains":
-        return dependentValue?.includes?.(value);
+        return typeof dependentValue === 'string' && dependentValue.includes(String(value));
       case "not-empty":
         return !!dependentValue;
       default:
@@ -508,7 +500,7 @@ export const Form = ({
           <Textarea
             id={field.name}
             name={field.name}
-            value={formData[field.name]}
+            value={String(formData[field.name] || '')}
             onChange={(e) => handleChange(field, e.target.value)}
             onBlur={() => handleBlur(field)}
             placeholder={field.placeholder}
@@ -521,7 +513,7 @@ export const Form = ({
       case "select":
         return (
           <Select
-            value={formData[field.name]}
+            value={String(formData[field.name] || '')}
             onValueChange={(value) => handleChange(field, value)}
             disabled={isDisabled}
           >
@@ -543,7 +535,7 @@ export const Form = ({
           <div className="flex items-center space-x-2">
             <Checkbox
               id={field.name}
-              checked={formData[field.name]}
+              checked={Boolean(formData[field.name])}
               onCheckedChange={(checked) => handleChange(field, checked)}
               disabled={isDisabled}
             />
@@ -561,7 +553,7 @@ export const Form = ({
       case "radio":
         return (
           <RadioGroup
-            value={formData[field.name]}
+            value={String(formData[field.name] || '')}
             onValueChange={(value) => handleChange(field, value)}
             disabled={isDisabled}
           >
@@ -580,7 +572,7 @@ export const Form = ({
         );
 
       case "multiselect":
-        const selectedValues = formData[field.name] || [];
+        const selectedValues = Array.isArray(formData[field.name]) ? formData[field.name] as string[] : [];
         return (
           <div className="space-y-3">
             <div className="grid grid-cols-1 gap-2">
@@ -599,7 +591,7 @@ export const Form = ({
                     onClick={() => {
                       if (isDisabled) return;
                       const newValues = isSelected
-                        ? selectedValues.filter((v: string) => v !== option.value)
+                        ? selectedValues.filter((v) => v !== option.value)
                         : [...selectedValues, option.value];
                       handleChange(field, newValues);
                     }}
@@ -644,7 +636,7 @@ export const Form = ({
         );
 
       case "range":
-        const rangeValue = formData[field.name] || field.min || 0;
+        const rangeValue = Number(formData[field.name] || field.min || 0);
         return (
           <div className="space-y-3">
             <Slider
@@ -721,7 +713,7 @@ export const Form = ({
 
       case "tel":
         // Get current raw value and format it for display
-        const rawPhoneValue = formData[field.name] || "";
+        const rawPhoneValue = String(formData[field.name] || "");
         const phoneFormat = field.phoneFormat || "auto";
         const displayValue = rawPhoneValue ? formatPhoneNumber(rawPhoneValue, phoneFormat) : "";
         
@@ -757,7 +749,7 @@ export const Form = ({
             id={field.name}
             name={field.name}
             type={field.type}
-            value={formData[field.name]}
+            value={String(formData[field.name] || '')}
             onChange={(e) => handleChange(field, e.target.value)}
             onBlur={() => handleBlur(field)}
             disabled={isDisabled}
@@ -771,7 +763,7 @@ export const Form = ({
             id={field.name}
             name={field.name}
             type={field.type}
-            value={formData[field.name]}
+            value={String(formData[field.name] || '')}
             onChange={(e) => handleChange(field, e.target.value)}
             onBlur={() => handleBlur(field)}
             placeholder={field.placeholder}
