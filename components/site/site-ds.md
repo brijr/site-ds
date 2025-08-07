@@ -28,7 +28,6 @@ import {
   Grid,
   Flex,
   Prose,
-  type ThemeProps, // Import theme type if needed
 } from "@/components/site/ds";
 import { Form } from "@/components/site/form"; // Client component
 
@@ -45,106 +44,6 @@ import { Input } from "@/components/ui/input";
 // ... any other shadcn component
 ```
 
-## Theming
-
-⚠️ **IMPORTANT**: To customize colors and fonts, you MUST pass a `theme` prop to the `Main` component. Without it, the site uses default system fonts and shadcn colors.
-
-### How to Use Theme
-
-The Main component accepts a `theme` prop with these options:
-
-#### Colors (all optional)
-- `primary`: Main CTA buttons and primary elements (hex, rgb, or hsl)
-- `secondary`: Secondary buttons and elements
-- `accent`: Accent colors
-- `background`: Page background color
-- `foreground`: Default text color
-- `brand`: Custom brand color (use with `.text-brand`, `.bg-brand` classes)
-
-#### Fonts (all optional)
-- `heading`: Font family for all headers (h1-h6)
-- `body`: Font family for body text
-
-⚠️ **Note**: Fonts must be loaded separately (via Google Fonts, next/font, etc.) or use system fonts.
-
-### Examples
-
-```tsx
-// ❌ WITHOUT THEME - Uses browser defaults (not recommended for branding)
-<Main>
-  <Header>Welcome</Header>
-  <Button>Get Started</Button>
-</Main>
-
-// ✅ RECOMMENDED - Always provide a theme for consistent branding
-<Main theme={{
-  colors: {
-    primary: "#0066FF",     // Your brand's primary color
-  },
-  fonts: {
-    heading: "Georgia, serif",  // Use system fonts or loaded fonts
-    body: "system-ui, sans-serif"
-  }
-}}>
-  <Header>Welcome</Header>  {/* Will use Georgia font */}
-  <Button>Get Started</Button>  {/* Will be blue (#0066FF) */}
-</Main>
-
-// Custom colors only
-<Main theme={{
-  colors: {
-    primary: "#0066FF",     // Blue buttons
-    secondary: "#7C3AED",    // Purple secondary
-    brand: "#FF6B6B"         // Custom brand color
-  }
-}}>
-  <Header>Welcome</Header>
-  <Button>Get Started</Button>  {/* Automatically blue */}
-  <p className="text-brand">Brand colored text</p>
-</Main>
-
-// System font stacks (always work, no loading required)
-<Main theme={{
-  fonts: {
-    heading: "-apple-system, BlinkMacSystemFont, 'Segoe UI', serif",
-    body: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-  }
-}}>
-  <Header>Welcome</Header>  {/* Modern system serif */}
-  <p>Body text</p>          {/* Modern system sans-serif */}
-</Main>
-
-// Full customization example
-<Main theme={{
-  colors: {
-    primary: "#FF6B6B",
-    background: "#FAFAFA",
-    foreground: "#1A1A1A"
-  },
-  fonts: {
-    heading: "Georgia, serif",  // Safe system font
-    body: "system-ui, sans-serif"
-  },
-  dark: false  // Force light mode
-}}>
-  {/* Fully themed experience */}
-</Main>
-```
-
-### Safe System Font Stacks
-
-These fonts work everywhere without loading:
-
-```tsx
-// Modern sans-serif
-heading: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-
-// Classic serif
-heading: "Georgia, Cambria, 'Times New Roman', serif"
-
-// Monospace
-heading: "'SF Mono', Monaco, 'Cascadia Code', monospace"
-```
 
 ## Components
 
@@ -152,7 +51,7 @@ heading: "'SF Mono', Monaco, 'Cascadia Code', monospace"
 
 #### Main
 
-Wraps the main content area of your page.
+Wraps the main content area of your page. Uses the default shadcn/ui color system.
 
 ```tsx
 <Main className="min-h-screen">{/* Page content */}</Main>
